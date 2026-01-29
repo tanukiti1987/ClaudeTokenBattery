@@ -3,13 +3,13 @@ set -e
 
 # Build configuration
 APP_NAME="ClaudeTokenBattery"
-BUILD_DIR=".build/release"
+BUILD_DIR=".build/arm64-apple-macosx/release"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
 
-echo "Building $APP_NAME for release..."
+echo "Building $APP_NAME for release (Apple Silicon)..."
 
-# Clean and build
-swift build -c release
+# Build for Apple Silicon (arm64)
+swift build -c release --arch arm64
 
 # Create app bundle structure
 echo "Creating app bundle..."

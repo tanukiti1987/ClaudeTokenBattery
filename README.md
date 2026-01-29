@@ -57,6 +57,7 @@ Token limits are **estimated values** based on Max5 measurements:
 ## Requirements
 
 - macOS 13.0 or later
+- Apple Silicon Mac (M1/M2/M3/M4)
 - Claude Code CLI installed and authenticated
 
 ## Auto-start on Login
