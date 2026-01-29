@@ -6,12 +6,12 @@ class RateLimitService {
     private let dateFormatter: ISO8601DateFormatter
     private let logFile: URL
 
-    // 2026年1月時点の推定値（Max5実測値ベース）
-    // Pro: 基準値, Max5: Pro×5, Max20: Max5×4
+    // Claude-Code-Usage-Monitor の値を参考
+    // https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor
     private let planLimits: [String: Int] = [
-        "20x": 252_000,  // Max5 × 4
-        "5x": 63_000,    // 実測ベース（Claude表示と照合）
-        "pro": 12_600    // Max5 ÷ 5
+        "20x": 220_000,  // Max20
+        "5x": 88_000,    // Max5
+        "pro": 19_000    // Pro
     ]
 
     init() {
