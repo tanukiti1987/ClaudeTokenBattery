@@ -84,9 +84,9 @@ Max5の実測値を基準に、倍率から算出：
 
 | プラン | 上限 | 倍率 | rateLimitTier |
 |--------|------|------|---------------|
-| Pro | 12,000 | 1x（基準） | `pro` |
-| Max5 | 60,000 | Pro × 5 | `default_claude_max_5x` |
-| Max20 | 240,000 | Max5 × 4 | `default_claude_max_20x` |
+| Pro | 14,400 | 1x（基準） | `pro` |
+| Max5 | 72,000 | Pro × 5 | `default_claude_max_5x` |
+| Max20 | 288,000 | Max5 × 4 | `default_claude_max_20x` |
 
 ※ 推定値のため、実際の上限と異なる場合あり。
 

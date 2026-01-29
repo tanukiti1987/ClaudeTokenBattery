@@ -48,9 +48,9 @@ Token limits are **estimated values** based on Max5 measurements:
 
 | Plan | Token Limit (5h) | Multiplier | Rate Limit Tier |
 |------|------------------|------------|-----------------|
-| Pro | 12,000 | 1x (base) | `pro` |
-| Max5 | 60,000 | 5x Pro | `default_claude_max_5x` |
-| Max20 | 240,000 | 4x Max5 | `default_claude_max_20x` |
+| Pro | 14,400 | 1x (base) | `pro` |
+| Max5 | 72,000 | 5x Pro | `default_claude_max_5x` |
+| Max20 | 288,000 | 4x Max5 | `default_claude_max_20x` |
 
 > **Note:** These are estimates. Actual limits may vary and are subject to change by Anthropic.
 

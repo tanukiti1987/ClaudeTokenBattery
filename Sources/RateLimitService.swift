@@ -9,9 +9,9 @@ class RateLimitService {
     // 2026年1月時点の推定値（Max5実測値ベース）
     // Pro: 基準値, Max5: Pro×5, Max20: Max5×4
     private let planLimits: [String: Int] = [
-        "20x": 240_000,  // Max5 × 4
-        "5x": 60_000,    // 実測ベース
-        "pro": 12_000    // Max5 ÷ 5
+        "20x": 288_000,  // Max5 × 4
+        "5x": 72_000,    // 実測ベース（Claude表示と照合）
+        "pro": 14_400    // Max5 ÷ 5
     ]
 
     init() {
@@ -102,6 +102,7 @@ class RateLimitService {
     private func calculateUsage(since startDate: Date) -> (tokens: Int, earliestTime: Date?) {
         var totalTokens = 0
         var earliestTime: Date?
+        var globalProcessedUUIDs = Set<String>()  // グローバルでUUID重複排除
         let projectsDir = "\(claudeDir)/projects"
         log("projectsDir: \(projectsDir)")
 
@@ -113,14 +114,14 @@ class RateLimitService {
 
         for projectDir in projectDirs where !projectDir.hasPrefix(".") {
             let projectPath = "\(projectsDir)/\(projectDir)"
-            processDirectory(projectPath, since: startDate, tokens: &totalTokens, earliest: &earliestTime)
+            processDirectory(projectPath, since: startDate, tokens: &totalTokens, earliest: &earliestTime, processedUUIDs: &globalProcessedUUIDs)
         }
-        log("After processing: totalTokens=\(totalTokens)")
+        log("After processing: totalTokens=\(totalTokens), uniqueEntries=\(globalProcessedUUIDs.count)")
 
         return (totalTokens, earliestTime)
     }
 
-    private func processDirectory(_ dirPath: String, since startDate: Date, tokens: inout Int, earliest: inout Date?) {
+    private func processDirectory(_ dirPath: String, since startDate: Date, tokens: inout Int, earliest: inout Date?, processedUUIDs: inout Set<String>) {
         guard let items = try? FileManager.default.contentsOfDirectory(atPath: dirPath) else { return }
 
         var filesProcessed = 0
@@ -130,13 +131,13 @@ class RateLimitService {
 
             if FileManager.default.fileExists(atPath: itemPath, isDirectory: &isDir) {
                 if isDir.boolValue {
-                    processDirectory(itemPath, since: startDate, tokens: &tokens, earliest: &earliest)
+                    processDirectory(itemPath, since: startDate, tokens: &tokens, earliest: &earliest, processedUUIDs: &processedUUIDs)
                 } else if item.hasSuffix(".jsonl") {
                     if let attrs = try? FileManager.default.attributesOfItem(atPath: itemPath),
                        let modDate = attrs[.modificationDate] as? Date,
                        modDate >= startDate {
                         filesProcessed += 1
-                        let (fileTokens, fileEarliest) = parseFile(itemPath, since: startDate)
+                        let (fileTokens, fileEarliest) = parseFile(itemPath, since: startDate, processedUUIDs: &processedUUIDs)
                         if fileTokens > 0 {
                             log("File \(item): \(fileTokens) tokens")
                         }
@@ -155,14 +156,13 @@ class RateLimitService {
         }
     }
 
-    private func parseFile(_ path: String, since startDate: Date) -> (tokens: Int, earliest: Date?) {
+    private func parseFile(_ path: String, since startDate: Date, processedUUIDs: inout Set<String>) -> (tokens: Int, earliest: Date?) {
         guard let content = try? String(contentsOfFile: path, encoding: .utf8) else {
             return (0, nil)
         }
 
         var totalTokens = 0
         var earliest: Date?
-        var processedUUIDs = Set<String>()
 
         for line in content.components(separatedBy: .newlines) where !line.isEmpty {
             guard let data = line.data(using: .utf8),
@@ -178,7 +178,7 @@ class RateLimitService {
                 earliest = timestamp
             }
 
-            // usageを処理（UUIDで重複を避ける）
+            // usageを処理（グローバルUUIDで重複を避ける）
             if let uuid = json["uuid"] as? String,
                let message = json["message"] as? [String: Any],
                let usage = message["usage"] as? [String: Any],
