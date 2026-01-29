@@ -213,10 +213,13 @@ class RateLimitService {
 
                 processedUUIDs.insert(uuid)
 
-                // Rate limitはinput_tokens + output_tokensでカウント
+                // Rate limitは全トークンタイプをカウント
+                // 参考: Claude-Code-Usage-Monitor, ccusage
                 var tokens = 0
                 if let input = usage["input_tokens"] as? Int { tokens += input }
                 if let output = usage["output_tokens"] as? Int { tokens += output }
+                if let cacheCreation = usage["cache_creation_input_tokens"] as? Int { tokens += cacheCreation }
+                if let cacheRead = usage["cache_read_input_tokens"] as? Int { tokens += cacheRead }
                 totalTokens += tokens
             }
         }

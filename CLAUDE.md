@@ -75,8 +75,10 @@ open .build/release/ClaudeTokenBattery.app
 
 - `input_tokens`: ✓ カウント
 - `output_tokens`: ✓ カウント
-- `cache_creation_input_tokens`: ✗ カウントしない
-- `cache_read_input_tokens`: ✗ カウントしない
+- `cache_creation_input_tokens`: ✓ カウント
+- `cache_read_input_tokens`: ✓ カウント
+
+※ Claude-Code-Usage-Monitor、ccusage の実装を参考に、全トークンタイプをカウント。
 
 ### プラン別上限（2026年1月時点の推定値）
 
