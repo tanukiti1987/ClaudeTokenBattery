@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import ServiceManagement
 
 class StatusBarController: NSObject {
     private var statusItem: NSStatusItem!
@@ -157,6 +158,31 @@ class StatusBarController: NSObject {
     }
 }
 
+// MARK: - Login Item Manager
+
+class LoginItemManager: ObservableObject {
+    @Published var isEnabled: Bool
+
+    init() {
+        self.isEnabled = SMAppService.mainApp.status == .enabled
+    }
+
+    func setEnabled(_ enabled: Bool) {
+        guard enabled != (SMAppService.mainApp.status == .enabled) else { return }
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+            isEnabled = SMAppService.mainApp.status == .enabled
+        } catch {
+            print("Failed to set login item: \(error)")
+            isEnabled = SMAppService.mainApp.status == .enabled
+        }
+    }
+}
+
 // MARK: - Popover Content View
 
 struct PopoverContentView: View {
@@ -165,6 +191,7 @@ struct PopoverContentView: View {
     let planName: String
     let onRefresh: () -> Void
     let onQuit: () -> Void
+    @StateObject private var loginItemManager = LoginItemManager()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -229,6 +256,18 @@ struct PopoverContentView: View {
                         .foregroundColor(.secondary)
                 }
             }
+
+            Divider()
+
+            // ログイン時に起動
+            Toggle(isOn: Binding(
+                get: { loginItemManager.isEnabled },
+                set: { loginItemManager.setEnabled($0) }
+            )) {
+                Text("ログイン時に起動")
+                    .font(.caption)
+            }
+            .toggleStyle(.checkbox)
 
             Divider()
 
