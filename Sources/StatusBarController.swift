@@ -123,8 +123,8 @@ class StatusBarController: NSObject {
     }
 
     private func startPeriodicUpdates() {
-        // 5分ごとに更新
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
+        // 1分ごとに更新
+        updateTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
             self?.fetchRateLimit()
         }
     }
