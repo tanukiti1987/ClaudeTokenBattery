@@ -9,9 +9,9 @@ class RateLimitService {
     // 2026年1月時点の推定値（Max5実測値ベース）
     // Pro: 基準値, Max5: Pro×5, Max20: Max5×4
     private let planLimits: [String: Int] = [
-        "20x": 288_000,  // Max5 × 4
-        "5x": 72_000,    // 実測ベース（Claude表示と照合）
-        "pro": 14_400    // Max5 ÷ 5
+        "20x": 252_000,  // Max5 × 4
+        "5x": 63_000,    // 実測ベース（Claude表示と照合）
+        "pro": 12_600    // Max5 ÷ 5
     ]
 
     init() {
@@ -80,23 +80,50 @@ class RateLimitService {
     }
 
     func fetchRateLimitInfo() async throws -> RateLimitInfo {
-        let fiveHoursAgo = Date().addingTimeInterval(-5 * 60 * 60)
-        log("Starting calculateUsage since: \(fiveHoursAgo)")
-        let (tokensUsed, earliestTime) = calculateUsage(since: fiveHoursAgo)
-        log("tokensUsed: \(tokensUsed), earliestTime: \(String(describing: earliestTime))")
+        let (blockStart, blockEnd) = getCurrentBlock()
+        log("Current block (JST): \(blockStart) - \(blockEnd)")
+        let (tokensUsed, _) = calculateUsage(since: blockStart)
+        log("tokensUsed: \(tokensUsed)")
         let tokenLimit = getTokenLimit()
         let tokensRemaining = max(0, tokenLimit - tokensUsed)
-        let resetDate = earliestTime?.addingTimeInterval(5 * 60 * 60) ?? Date().addingTimeInterval(5 * 60 * 60)
         log("tokenLimit: \(tokenLimit), tokensRemaining: \(tokensRemaining)")
 
         return RateLimitInfo(
             tokensLimit: tokenLimit,
             tokensRemaining: tokensRemaining,
-            tokensReset: resetDate,
+            tokensReset: blockEnd,
             requestsLimit: 0,
             requestsRemaining: 0,
             requestsReset: Date()
         )
+    }
+
+    /// リセット時刻をベースに5時間ブロックを計算
+    /// 現在時刻から次のリセット時刻（5時間境界）を求め、そこから5時間前をブロック開始とする
+    private func getCurrentBlock() -> (start: Date, end: Date) {
+        let now = Date()
+        let jst = TimeZone(identifier: "Asia/Tokyo")!
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = jst
+
+        var components = calendar.dateComponents([.year, .month, .day, .hour], from: now)
+        let hour = components.hour ?? 0
+
+        // 次のリセット時刻（5の倍数時）を計算
+        let nextResetHour = ((hour / 5) + 1) * 5
+        components.hour = nextResetHour % 24
+        components.minute = 0
+        components.second = 0
+
+        // 日をまたぐ場合の処理
+        if nextResetHour >= 24 {
+            components.day = (components.day ?? 1) + 1
+        }
+
+        let blockEnd = calendar.date(from: components)!
+        let blockStart = blockEnd.addingTimeInterval(-5 * 60 * 60)
+
+        return (blockStart, blockEnd)
     }
 
     private func calculateUsage(since startDate: Date) -> (tokens: Int, earliestTime: Date?) {
