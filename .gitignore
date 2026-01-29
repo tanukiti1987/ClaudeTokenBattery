@@ -1,0 +1,19 @@
+# Build
+.build/
+DerivedData/
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+
+# macOS
+.DS_Store
+*.swp
+*~
+
+# Debug logs
+/tmp/claude-battery-debug.log
+
+# Claude settings (local only)
+.claude/
