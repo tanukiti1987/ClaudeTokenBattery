@@ -324,9 +324,14 @@ struct BatteryGaugeView: View {
                 Text(title)
                     .font(.subheadline)
                 Spacer()
-                Text("\(percentage)%")
-                    .font(.title2.bold().monospacedDigit())
-                    .foregroundColor(color)
+                HStack(alignment: .lastTextBaseline, spacing: 2) {
+                    Text("残り")
+                        .font(.caption2)
+                        .foregroundColor(.white)
+                    Text("\(percentage)%")
+                        .font(.title2.bold().monospacedDigit())
+                        .foregroundColor(color)
+                }
             }
 
             // プログレスバー
