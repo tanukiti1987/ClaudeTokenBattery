@@ -78,15 +78,17 @@ open .build/release/ClaudeTokenBattery.app
 - `cache_creation_input_tokens`: ✗ カウントしない
 - `cache_read_input_tokens`: ✗ カウントしない
 
-### プラン別上限（2026年1月時点の実測値）
+### プラン別上限（2026年1月時点の推定値）
 
-| プラン | 上限 | rateLimitTier |
-|--------|------|---------------|
-| Max20 | 150,000 | `default_claude_max_20x` |
-| Max5 | 60,000 | `default_claude_max_5x` |
-| Pro | 30,000 | `pro` |
+Max5の実測値を基準に、倍率から算出：
 
-※ 公式値（88K等）より低い実測値を使用。2026年1月以降、rate limitが厳しくなったとの報告多数。
+| プラン | 上限 | 倍率 | rateLimitTier |
+|--------|------|------|---------------|
+| Pro | 12,000 | 1x（基準） | `pro` |
+| Max5 | 60,000 | Pro × 5 | `default_claude_max_5x` |
+| Max20 | 240,000 | Max5 × 4 | `default_claude_max_20x` |
+
+※ 推定値のため、実際の上限と異なる場合あり。
 
 ### プラン判定
 

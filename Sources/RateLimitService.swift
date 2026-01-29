@@ -6,11 +6,12 @@ class RateLimitService {
     private let dateFormatter: ISO8601DateFormatter
     private let logFile: URL
 
-    // 2026年1月時点の実測値ベースの上限
+    // 2026年1月時点の推定値（Max5実測値ベース）
+    // Pro: 基準値, Max5: Pro×5, Max20: Max5×4
     private let planLimits: [String: Int] = [
-        "20x": 150_000,  // 推定（元220K）
-        "5x": 60_000,    // 実測ベース（元88K）
-        "pro": 30_000    // 推定（元44K）
+        "20x": 240_000,  // Max5 × 4
+        "5x": 60_000,    // 実測ベース
+        "pro": 12_000    // Max5 ÷ 5
     ]
 
     init() {
