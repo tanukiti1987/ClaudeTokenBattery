@@ -75,18 +75,20 @@ open .build/release/ClaudeTokenBattery.app
 
 - `input_tokens`: ✓ カウント
 - `output_tokens`: ✓ カウント
-- `cache_creation_input_tokens`: ✗ カウントしない
-- `cache_read_input_tokens`: ✗ カウントしない
+- `cache_creation_input_tokens`: ✓ カウント
+- `cache_read_input_tokens`: ✓ カウント
 
-### プラン別上限（2026年1月時点の推定値）
+※ Claude-Code-Usage-Monitor、ccusage の実装を参考に、全トークンタイプをカウント。
 
-Max5の実測値を基準に、倍率から算出：
+### プラン別上限
 
-| プラン | 上限 | 倍率 | rateLimitTier |
-|--------|------|------|---------------|
-| Pro | 12,600 | 1x（基準） | `pro` |
-| Max5 | 63,000 | Pro × 5 | `default_claude_max_5x` |
-| Max20 | 252,000 | Max5 × 4 | `default_claude_max_20x` |
+Claude-Code-Usage-Monitor の値を参考：
+
+| プラン | 上限 | rateLimitTier |
+|--------|------|---------------|
+| Pro | 19,000 | `pro` |
+| Max5 | 88,000 | `default_claude_max_5x` |
+| Max20 | 220,000 | `default_claude_max_20x` |
 
 ※ 推定値のため、実際の上限と異なる場合あり。
 
