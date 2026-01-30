@@ -83,15 +83,15 @@ open .build/release/ClaudeTokenBattery.app
 
 ### プラン別上限
 
-Claude-Code-Usage-Monitor の値を参考：
+実測値に基づく推定（2026年1月時点）：
 
 | プラン | 上限 | rateLimitTier |
 |--------|------|---------------|
-| Pro | 19,000 | `pro` |
-| Max5 | 88,000 | `default_claude_max_5x` |
-| Max20 | 220,000 | `default_claude_max_20x` |
+| Pro | 26,000 | `pro` |
+| Max5 | 130,000 | `default_claude_max_5x` |
+| Max20 | 520,000 | `default_claude_max_20x` |
 
-※ 推定値のため、実際の上限と異なる場合あり。
+※ Max5は88Kではなく約130Kの実測値。Pro/Max20は比率から推定。
 
 ### 時間ウィンドウ
 
