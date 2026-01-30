@@ -75,10 +75,11 @@ open .build/release/ClaudeTokenBattery.app
 
 - `input_tokens`: ✓ カウント
 - `output_tokens`: ✓ カウント
-- `cache_creation_input_tokens`: ✓ カウント
-- `cache_read_input_tokens`: ✓ カウント
+- `cache_creation_input_tokens`: ✗ カウントしない
+- `cache_read_input_tokens`: ✗ カウントしない
 
-※ Claude-Code-Usage-Monitor、ccusage の実装を参考に、全トークンタイプをカウント。
+※ キャッシュ関連トークン（cache_creation, cache_read）は rate limit には直接カウントされない模様。
+  実測に基づき、input_tokens + output_tokens のみをカウント。
 
 ### プラン別上限
 
@@ -94,8 +95,10 @@ Claude-Code-Usage-Monitor の値を参考：
 
 ### 時間ウィンドウ
 
-JSTベースの固定5時間ブロック（0:00, 5:00, 10:00, 15:00, 20:00開始）を使用。
-リセット時刻から逆算してブロック開始時刻を決定。
+ログエントリのタイムスタンプから動的に5時間ブロックを算出（Claude-Code-Usage-Monitor方式）。
+- ブロック開始: 最初のエントリを正時（UTC）に丸める
+- ブロック終了: 開始 + 5時間
+- 新ブロック開始条件: 5時間以上のギャップ、またはエントリがブロック終了を超えた場合
 
 ### プラン判定
 

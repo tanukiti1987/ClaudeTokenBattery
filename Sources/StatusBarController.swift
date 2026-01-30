@@ -97,7 +97,12 @@ class StatusBarController: NSObject {
             rateLimitInfo: currentInfo,
             lastError: lastError,
             planName: rateLimitService.getPlanName(),
+            currentBlockStartHour: rateLimitService.getCurrentBlockStartHourJST(),
             onRefresh: { [weak self] in
+                self?.fetchRateLimit()
+            },
+            onResetHourChanged: { [weak self] newHour in
+                SettingsManager.shared.resetHourJST = newHour
                 self?.fetchRateLimit()
             },
             onQuit: {
@@ -189,9 +194,13 @@ struct PopoverContentView: View {
     let rateLimitInfo: RateLimitInfo?
     let lastError: String?
     let planName: String
+    let currentBlockStartHour: Int
     let onRefresh: () -> Void
+    let onResetHourChanged: (Int) -> Void
     let onQuit: () -> Void
     @StateObject private var loginItemManager = LoginItemManager()
+    @State private var isEditingResetHour = false
+    @State private var editingHour: String = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -236,14 +245,53 @@ struct PopoverContentView: View {
 
                     Divider()
 
-                    // リセット時間
+                    // ブロック時間
                     HStack {
-                        Text("リセット時刻:")
+                        Text("現在のブロック:")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
-                        Text(formatResetTime(info.tokensReset))
+                        Text(formatBlockTime())
                             .font(.caption.monospacedDigit())
+                    }
+
+                    // リセット時刻（編集可能）
+                    HStack {
+                        Text("ブロック開始時刻:")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        if isEditingResetHour {
+                            HStack(spacing: 4) {
+                                TextField("HH", text: $editingHour)
+                                    .textFieldStyle(.roundedBorder)
+                                    .frame(width: 40)
+                                    .font(.caption.monospacedDigit())
+                                Text("時")
+                                    .font(.caption)
+                                Button("OK") {
+                                    if let hour = Int(editingHour), hour >= 0, hour < 24 {
+                                        onResetHourChanged(hour)
+                                    }
+                                    isEditingResetHour = false
+                                }
+                                .buttonStyle(.borderless)
+                                .font(.caption)
+                            }
+                        } else {
+                            HStack(spacing: 4) {
+                                Text("\(currentBlockStartHour)時")
+                                    .font(.caption.monospacedDigit())
+                                Button(action: {
+                                    editingHour = "\(currentBlockStartHour)"
+                                    isEditingResetHour = true
+                                }) {
+                                    Image(systemName: "pencil")
+                                        .font(.caption)
+                                }
+                                .buttonStyle(.borderless)
+                            }
+                        }
                     }
                 }
             } else {
@@ -288,23 +336,9 @@ struct PopoverContentView: View {
         .frame(width: 260)
     }
 
-    private func formatResetTime(_ date: Date) -> String {
-        // 時間の最大値に丸める (14:56:23 -> 14:59:59)
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.hour], from: date)
-        var roundedComponents = DateComponents()
-        roundedComponents.hour = components.hour
-        roundedComponents.minute = 59
-        roundedComponents.second = 59
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm:ss"
-        formatter.timeZone = TimeZone.current
-
-        if let roundedDate = calendar.date(from: roundedComponents) {
-            return formatter.string(from: roundedDate)
-        }
-        return formatter.string(from: date)
+    private func formatBlockTime() -> String {
+        let endHour = (currentBlockStartHour + 5) % 24
+        return "\(currentBlockStartHour):00 - \(endHour):00"
     }
 }
 
